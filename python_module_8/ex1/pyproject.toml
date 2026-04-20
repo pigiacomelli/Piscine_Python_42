@@ -1,0 +1,11 @@
+[tool.poetry]
+name = "matrix-loading"
+version = "0.1.0"
+description = "Matrix data loader"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "*"
+numpy = "*"
+matplotlib = "*"
+requests = "*"
