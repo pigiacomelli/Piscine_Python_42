@@ -1,22 +1,26 @@
-def main() -> None:
-    print("=== CYBER ARCHIVES - DATA RECOVERY SYSTEM ===\n")
-    print("Accessing Storage Vault: ancient_fragment.txt")
+import sys
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: ft_ancient_text.py <file>")
+        return
+
+    filename = sys.argv[1]
+
+    print("=== Cyber Archives Recovery ===")
+    print(f"Accessing file '{filename}'")
 
     try:
-        file = open("ancient_fragment.txt", "r")
-        print("Connection established...\n")
-
-        content = file.read()
-
-        print("RECOVERED DATA:")
-        print(content)
-
+        file = open(filename, "r")
+        print("---")
+        print()
+        for line in file:
+            print(line, end="")
+        print("---")
         file.close()
-        print("\nData recovery complete. Storage unit disconnected.")
-
-    except FileNotFoundError:
-        print("ERROR: Storage vault not found. Run data generator first.")
-
+        print(f"File '{filename}' closed.")
+    except Exception as e:
+        print(f"Error opening file '{filename}': {e}")
 
 if __name__ == "__main__":
     main()

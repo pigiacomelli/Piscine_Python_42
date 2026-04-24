@@ -16,11 +16,11 @@ def main() -> None:
             value = int(arg)
             scores.append(value)
         except ValueError:
-            print(f"Invalid score ignored: {arg}")
+            print(f"Invalid score ignored: '{arg}'")
 
     
     if len(scores) == 0:
-        print("No valid scores to process.")
+        print("No valid scores to process. Usage: python3 ft_score_analytics.py <score1> <score2> ...")
         return
 
     total_players: int = len(scores)

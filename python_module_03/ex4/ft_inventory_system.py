@@ -4,92 +4,64 @@ import sys
 def main() -> None:
     print("=== Inventory System Analysis ===")
 
-    if len(sys.argv) == 1:
-        print("No inventory items provided.")
-        return
+    inventory = {}
 
-    inventory: dict[str, int] = {}
-
-    # Parsing da linha de comando
+    # ---- Parse arguments ----
     for arg in sys.argv[1:]:
-        parts = arg.split(":")
-
-        if len(parts) != 2:
-            print(f"Invalid format ignored: {arg}")
+        if ":" not in arg:
+            print(f"Error - invalid parameter '{arg}'")
             continue
 
-        item: str = parts[0]
+        item, qty = arg.split(":", 1)
 
+        # Check duplicate
+        if item in inventory:
+            print(f"Redundant item '{item}' - discarding")
+            continue
+
+        # Convert quantity
         try:
-            quantity: int = int(parts[1])
-        except ValueError:
-            print(f"Invalid quantity ignored: {arg}")
+            quantity = int(qty)
+        except ValueError as e:
+            print(f"Quantity error for '{item}': {e}")
             continue
 
         inventory[item] = quantity
 
-    if len(inventory) == 0:
-        print("No valid inventory data.")
-        return
+    # ---- Display inventory ----
+    print(f"Got inventory: {inventory}")
 
-    # Estatísticas básicas
-    total_items: int = sum(inventory.values())
-    unique_items: int = len(inventory)
+    # ---- Item list ----
+    items = list(inventory.keys())
+    print(f"Item list: {items}")
 
-    print(f"Total items in inventory: {total_items}")
-    print(f"Unique item types: {unique_items}\n")
+    # ---- Total quantity ----
+    total = sum(inventory.values())
+    print(f"Total quantity of the {len(items)} items: {total}")
 
-    print("=== Current Inventory ===")
+    # ---- Percentages ----
+    for item in items:
+        percentage = (inventory[item] / total) * 100 if total > 0 else 0
+        print(f"Item {item} represents {round(percentage, 1)}%")
 
-    for item, quantity in inventory.items():
-        percentage: float = (quantity / total_items) * 100
-        print(f"{item}: {quantity} units ({percentage:.1f}%)")
+    # ---- Most / least abundant ----
+    most_item = None
+    least_item = None
 
-    # Item mais e menos abundante
-    most_abundant: str = max(inventory, key=inventory.get)
-    least_abundant: str = min(inventory, key=inventory.get)
+    for item in items:
+        if most_item is None or inventory[item] > inventory[most_item]:
+            most_item = item
+        if least_item is None or inventory[item] < inventory[least_item]:
+            least_item = item
 
-    print("\n=== Inventory Statistics ===")
-    print(f"Most abundant: {most_abundant} ({inventory.get(most_abundant)} units)")
-    print(f"Least abundant: {least_abundant} ({inventory.get(least_abundant)} units)")
+    if most_item:
+        print(f"Item most abundant: {most_item} with quantity {inventory[most_item]}")
+    if least_item:
+        print(f"Item least abundant: {least_item} with quantity {inventory[least_item]}")
 
-    # Categorias
-    abundant: dict[str, int] = {}
-    moderate: dict[str, int] = {}
-    scarce: dict[str, int] = {}
-
-    for item, quantity in inventory.items():
-        if quantity >= 5:
-            abundant[item] = quantity
-        elif quantity >= 3:
-            moderate[item] = quantity
-        else:
-            scarce[item] = quantity
-
-    print("\n=== Item Categories ===")
-    if abundant:
-        print(f"Abundant: {abundant}")
-    if moderate:
-        print(f"Moderate: {moderate}")
-    if scarce:
-        print(f"Scarce: {scarce}")
-
-    # Sugestões simples de reposição
-    restock: list[str] = [item for item, quantity in inventory.items() if quantity <= 1]
-
-    print("\n=== Management Suggestions ===")
-    if restock:
-        print(f"Restock needed: {restock}")
-    else:
-        print("Stock levels are healthy.")
-
-    # Demonstração dos métodos do dicionário
-    print("\n=== Dictionary Properties Demo ===")
-    print(f"Dictionary keys: {list(inventory.keys())}")
-    print(f"Dictionary values: {list(inventory.values())}")
-
-    sample_lookup: str = "sword"
-    print(f"Sample lookup - '{sample_lookup}' in inventory: {sample_lookup in inventory}")
+    # ---- Add new item ----
+    inventory.update({"magic_item": 1})
+    print(f"Updated inventory: {inventory}")
 
 
 if __name__ == "__main__":
