@@ -1,5 +1,10 @@
+# Ignore environment files
 .env
+
+# Python cache
 __pycache__/
 *.pyc
-oracle_env/
-.venv/
+
+# Virtual environments
+venv/
+.env/

@@ -1,68 +1,103 @@
+# oracle.py
+
 import os
-from dotenv import load_dotenv
+import sys
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    print("ERROR: python-dotenv is not installed.")
+    print("Install it with: pip install python-dotenv")
+    sys.exit(1)
 
 
-def check_security():
-    # Security check: Ensure .env is in .gitignore
-    try:
-        if os.path.exists(".gitignore"):
-            with open(".gitignore", "r") as f:
-                content = f.read()
-                if ".env" in content:
-                    return True
-    except Exception:
-        pass
-    return False
-
-
-def main():
-    print("ORACLE STATUS: Reading the Matrix...\n")
-    # override=False means system variables take precedence over .env file
-    load_dotenv(override=False)
+def load_config():
+    # Load .env file (if present)
+    load_dotenv()
 
     config = {
-        "mode": os.getenv("MATRIX_MODE", "unknown"),
-        "database": os.getenv("DATABASE_URL", "Not set"),
-        "api_key": os.getenv("API_KEY", "Not set"),
-        "log_level": os.getenv("LOG_LEVEL", "INFO"),
-        "zion": os.getenv("ZION_ENDPOINT", "Offline")
+        "MATRIX_MODE": os.getenv("MATRIX_MODE"),
+        "DATABASE_URL": os.getenv("DATABASE_URL"),
+        "API_KEY": os.getenv("API_KEY"),
+        "LOG_LEVEL": os.getenv("LOG_LEVEL"),
+        "ZION_ENDPOINT": os.getenv("ZION_ENDPOINT"),
     }
 
+    return config
+
+
+def validate_config(config):
+    missing = [k for k, v in config.items() if not v]
+
+    if missing:
+        print("WARNING: Missing configuration variables:")
+        for key in missing:
+            print(f" - {key}")
+        print("Using defaults where possible.\n")
+
+    return missing
+
+
+def display_config(config):
+    mode = config["MATRIX_MODE"] or "development"
+
+    print("ORACLE STATUS: Reading the Matrix...")
     print("Configuration loaded:")
-    print(f"Mode: {config['mode']}")
 
-    # Logic to hide the actual password in the DB string for display
-    if config['database'] != "Not set":
-        print("Database: Connected to local instance")
+    print(f"Mode: {mode}")
+
+    if config["DATABASE_URL"]:
+        if "localhost" in config["DATABASE_URL"]:
+            print("Database: Connected to local instance")
+        else:
+            print("Database: Connected to remote instance")
     else:
-        print("Database: Disconnected")
+        print("Database: Not configured")
 
-    if config['api_key'] != "Not set":
+    if config["API_KEY"]:
         print("API Access: Authenticated")
     else:
-        print("API Access: Denied (Missing Key)")
+        print("API Access: Missing key")
 
-    print(f"Log Level: {config['log_level']}")
-    print(f"Zion Network: {'Online' if config['zion']
-                           != 'Offline' else 'Offline'}")
+    print(f"Log Level: {config['LOG_LEVEL'] or 'INFO'}")
 
-    # Security Checks
+    if config["ZION_ENDPOINT"]:
+        print("Zion Network: Online")
+    else:
+        print("Zion Network: Offline")
+
+
+def security_checks():
     print("\nEnvironment security check:")
 
-    if config['api_key'] == "Not set":
-        print("[WARNING] API Key missing")
-    else:
-        print("[OK] No hardcoded secrets detected")
-
+    # .env existence
     if os.path.exists(".env"):
         print("[OK] .env file properly configured")
     else:
-        print("[WARNING] .env file missing")
+        print("[WARNING] .env file not found")
 
-    if "MATRIX_MODE" in os.environ:
-        print("[OK] Production overrides available")
+    # .gitignore check
+    if os.path.exists(".gitignore"):
+        try:
+            with open(".gitignore") as f:
+                content = f.read()
+                if ".env" in content:
+                    print("[OK] No hardcoded secrets detected")
+                else:
+                    print("[WARNING] .env not ignored in .gitignore")
+        except Exception:
+            print("[WARNING] Could not read .gitignore")
     else:
-        print("[OK] Production overrides available (using defaults)")
+        print("[WARNING] .gitignore missing")
+
+    print("[OK] Production overrides available")
+
+
+def main():
+    config = load_config()
+    validate_config(config)
+    display_config(config)
+    security_checks()
 
     print("\nThe Oracle sees all configurations.")
 
